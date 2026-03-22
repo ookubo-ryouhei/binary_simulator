@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2進数・10進数コンバーター</title>
+    <style>
+        /* CSS: デザインの設定 */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #e9ecef;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            box-sizing: border-box;
+            transition: all 0.2s;
+            font-family: monospace; /* 数字を見やすく */
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4dabf7;
+            box-shadow: 0 0 0 4px rgba(77, 171, 247, 0.1);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 10px 0;
+            color: #adb5bd;
+            font-size: 1.2rem;
+        }
+
+        .btn-clear {
+            width: 100%;
+            padding: 10px;
+            background-color: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+
+        .btn-clear:hover {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Binary ⇄ Decimal</h1>
+        
+        <!-- 10進数入力 -->
+        <div class="input-group">
+            <label for="decimal">10進数 (Decimal)</label>
+            <input type="number" id="decimal" placeholder="例: 255" min="0">
+        </div>
+
+        <div class="divider">⇅</div>
+
+        <!-- 2進数入力 -->
+        <div class="input-group">
+            <label for="binary">2進数 (Binary)</label>
+            <input type="text" id="binary" placeholder="例: 11111111">
+        </div>
+
+        <button class="btn-clear" id="clearBtn">リセット</button>
+    </div>
+
+    <script>
+        // JavaScript: 変換ロジック
+        const decimalEl = document.getElementById('decimal');
+        const binaryEl = document.getElementById('binary');
+        const clearBtn = document.getElementById('clearBtn');
+
+        // 10進数が入力されたとき
+        decimalEl.addEventListener('input', () => {
+            const val = decimalEl.value;
+            if (val === "") {
+                binaryEl.value = "";
+                return;
+            }
+            // 10進数を2進数文字列に変換
+            const num = parseInt(val, 10);
+            binaryEl.value = num.toString(2);
+        });
+
+        // 2進数が入力されたとき
+        binaryEl.addEventListener('input', () => {
+            // 0と1以外を削除するバリデーション
+            let val = binaryEl.value.replace(/[^01]/g, '');
+            binaryEl.value = val;
+
+            if (val === "") {
+                decimalEl.value = "";
+                return;
+            }
+            // 2進数文字列を10進数数値に変換
+            decimalEl.value = parseInt(val, 2);
+        });
+
+        // クリア機能
+        clearBtn.addEventListener('click', () => {
+            decimalEl.value = "";
+            binaryEl.value = "";
+        });
+    </script>
+</body>
+</html>
