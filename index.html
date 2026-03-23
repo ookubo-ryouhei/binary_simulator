@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2進数・桁の重み学習コンバーター</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #f39c12;
+            --bg: #f8f9fa;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 { text-align: center; color: #333; margin-bottom: 2rem; }
+        
+        .input-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 2rem;
+        }
+        .input-group { flex: 1; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+        input:focus { border-color: var(--primary); outline: none; }
+
+        /* 桁の重み表示エリア */
+        .weight-container {
+            display: flex;
+            flex-direction: row-reverse; /* 右から1, 2, 4...と並べるため */
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        .bit-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 50px;
+        }
+        .weight-label {
+            font-size: 0.8rem;
+            color: #777;
+            margin-bottom: 5px;
+        }
+        .bit-box {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            border-radius: 4px;
+            background: #eee;
+            transition: all 0.2s;
+        }
+        .bit-box.active {
+            background-color: var(--secondary);
+            color: white;
+            border-color: #d35400;
+        }
+        .calculation {
+            margin-top: 2rem;
+            padding: 15px;
+            background: #fff8e1;
+            border-left: 5px solid var(--secondary);
+            font-family: monospace;
+            line-height: 1.6;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>桁の重みコンバーター</h1>
+
+    <div class="input-section">
+        <div class="input-group">
+            <label>10進数</label>
+            <input type="number" id="decInput" placeholder="例: 13" min="0">
+        </div>
+        <div class="input-group">
+            <label>2進数</label>
+            <input type="text" id="binInput" placeholder="01101">
+        </div>
+    </div>
+
+    <hr>
+    <h3 style="text-align: center;">桁の重み分解</h3>
+    <div class="weight-container" id="weightContainer">
+        <!-- JSで動的に生成 -->
+    </div>
+
+    <div class="calculation" id="calcProcess">
+        ここに計算過程が表示されます
+    </div>
+</div>
+
+<script>
+    const decInput = document.getElementById('decInput');
+    const binInput = document.getElementById('binInput');
+    const weightContainer = document.getElementById('weightContainer');
+    const calcProcess = document.getElementById('calcProcess');
+
+    // 初期表示（8bit分）
+    updateDisplay("0");
+
+    decInput.addEventListener('input', (e) => {
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val)) {
+            updateDisplay("");
+            binInput.value = "";
+            return;
+        }
+        let bin = val.toString(2);
+        binInput.value = bin;
+        updateDisplay(bin);
+    });
+
+    binInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/[^01]/g, '');
+        e.target.value = val;
+        if (val === "") {
+            updateDisplay("");
+            decInput.value = "";
+            return;
+        }
+        decInput.value = parseInt(val, 2);
+        updateDisplay(val);
+    });
+
+    function updateDisplay(binStr) {
+        weightContainer.innerHTML = '';
+        if (!binStr) {
+            calcProcess.innerHTML = "数値を入力してください";
+            return;
+        }
+
+        const bits = binStr.split('').reverse();
+        let sumParts = [];
+        let total = 0;
+
+        // 少なくとも8桁、あるいは入力された桁数分表示
+        const displayLength = Math.max(8, bits.length);
+
+        for (let i = 0; i < displayLength; i++) {
+            const weight = Math.pow(2, i);
+            const bitValue = bits[i] || "0";
+            
+            // UI作成
+            const col = document.createElement('div');
+            col.className = 'bit-column';
+            
+            const wLabel = document.createElement('div');
+            wLabel.className = 'weight-label';
+            wLabel.innerText = weight;
+            
+            const bBox = document.createElement('div');
+            bBox.className = `bit-box ${bitValue === "1" ? "active" : ""}`;
+            bBox.innerText = bitValue;
+            
+            col.appendChild(wLabel);
+            col.appendChild(bBox);
+            weightContainer.appendChild(col);
+
+            // 計算過程の構築
+            if (bitValue === "1") {
+                sumParts.push(weight);
+                total += weight;
+            }
+        }
+
+        // 計算式の表示
+        if (sumParts.length > 0) {
+            calcProcess.innerHTML = `計算式: ${sumParts.reverse().join(' + ')} = <strong>${total}</strong>`;
+        } else {
+            calcProcess.innerHTML = `計算式: 0 = <strong>0</strong>`;
+        }
+    }
+</script>
+
+</body>
+</html>
